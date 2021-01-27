@@ -5,7 +5,7 @@
 
 int main(int argc, char** argv) {
   if (argc != 3) {
-    std::cerr << "usage: " << argv[1] << " [input ttf] [reference ttf]" << std::endl;
+    std::cerr << "usage: " << argv[0] << " [input ttf] [reference ttf]" << std::endl;
     exit(1);
   }
 
@@ -15,8 +15,16 @@ int main(int argc, char** argv) {
   font2svg::ttf_file reference(library, argv[2]);
 
   std::vector<font2svg::glyph> input_glyphs = input.get_all_glyphs();
-  for(const font2svg::glyph& g : input_glyphs) {
-    std::cout << g.svg() << std::endl;
+  std::vector<font2svg::glyph> reference_glyphs = reference.get_all_glyphs();
+
+  // find input glyphs in set of reference glyphs
+  for (const font2svg::glyph& input_glyph : input_glyphs) {
+    for (const font2svg::glyph& reference_glyph : reference_glyphs) {
+      if(input_glyph == reference_glyph) {
+        std::cout << "input glyph index " << input_glyph.glyph_index << " --> codepoint " << reference_glyph.charcode << std::endl;
+        break;
+      }
+    }
   }
 
   input.free();

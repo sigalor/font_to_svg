@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -20,9 +21,9 @@ public:
   FT_UInt glyph_index;
 	FT_ULong charcode;
 
-	FT_Vector* ftpoints;
-	char* tags;
-	short* contours;
+	std::vector<FT_Vector> points;
+	std::vector<char> tags;
+	std::vector<short> contours;
 
 	int bbwidth, bbheight;
 

@@ -36,11 +36,18 @@ std::vector<glyph> ttf_file::get_all_glyphs() {
   std::vector<glyph> ret;
   FT_UInt glyph_index;
   FT_ULong charcode = FT_Get_First_Char(face, &glyph_index);
-  std::cout << charcode << " " << glyph_index << std::endl;
 
-  while (glyph_index != 0) {
-    ret.push_back(glyph(face, glyph_index, charcode));
-    charcode = FT_Get_Next_Char(face, charcode, &glyph_index);
+  if (glyph_index == 0) {
+    // if the first glyph index is 0 already, try to query for glyphs anyway
+    for (FT_UInt i = 0; i < 0x10000; i++) {
+      if(glyph_index_exists(i))
+        ret.push_back(glyph(face, i));
+    }
+  } else {
+    while (glyph_index != 0) {
+      ret.push_back(glyph(face, glyph_index, charcode));
+      charcode = FT_Get_Next_Char(face, charcode, &glyph_index);
+    }
   }
 
   return ret;

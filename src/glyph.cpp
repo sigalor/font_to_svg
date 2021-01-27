@@ -13,8 +13,8 @@ There are three main components.
 */
 std::string glyph::create_outline() const {
 	std::stringstream svg;
-	if (ftoutline.n_points == 0) return "";
-	if (ftoutline.n_contours == 0) return "";
+	if (points.size() == 0) return "";
+	if (contours.size() == 0) return "";
 	svg	<< "<path fill='black' d='";
 
 	/* tag bit 1 indicates whether its a control point on a bez curve
@@ -30,21 +30,21 @@ std::string glyph::create_outline() const {
 
 	int contour_starti = 0;
 	int contour_endi = 0;
-	for (int i = 0 ; i < ftoutline.n_contours; i++) {
+	for (size_t i = 0; i < contours.size(); i++) {
 		contour_endi = contours[i];
 		int offset = contour_starti;
 		int npts = contour_endi - contour_starti + 1;
-		svg << " M " << ftpoints[contour_starti].x << "," << ftpoints[contour_starti].y;
+		svg << " M " << points[contour_starti].x << "," << points[contour_starti].y;
 		for (int j = 0; j < npts; j++) {
 			int thisi = j%npts + offset;
 			int nexti = (j+1)%npts + offset;
 			int nextnexti = (j+2)%npts + offset;
-			int x = ftpoints[thisi].x;
-			int y = ftpoints[thisi].y;
-			int nx = ftpoints[nexti].x;
-			int ny = ftpoints[nexti].y;
-			int nnx = ftpoints[nextnexti].x;
-			int nny = ftpoints[nextnexti].y;
+			int x = points[thisi].x;
+			int y = points[thisi].y;
+			int nx = points[nexti].x;
+			int ny = points[nexti].y;
+			int nnx = points[nextnexti].x;
+			int nny = points[nextnexti].y;
 			bool this_tagbit1 = (tags[thisi] & 1);
 			bool next_tagbit1 = (tags[nexti] & 1);
 			bool nextnext_tagbit1 = (tags[nextnexti] & 1);
@@ -88,31 +88,32 @@ glyph::glyph(FT_Face face, FT_UInt new_glyph_index, FT_ULong new_charcode) : gly
   ftoutline = slot->outline;
   gm = slot->metrics;
 
-  // Invert y coordinates (SVG = neg at top, TType = neg at bottom)
-  ftpoints = ftoutline.points;
-  for (int i = 0 ; i < ftoutline.n_points; i++)
-    ftpoints[i].y *= -1;
-
-  bbheight = face->bbox.yMax - face->bbox.yMin;
+	points = std::vector<FT_Vector>(ftoutline.points, ftoutline.points+ftoutline.n_points);
+	tags = std::vector<char>(ftoutline.tags, ftoutline.tags + ftoutline.n_points);
+	contours = std::vector<short>(ftoutline.contours, ftoutline.contours + ftoutline.n_contours);
+	bbheight = face->bbox.yMax - face->bbox.yMin;
   bbwidth = face->bbox.xMax - face->bbox.xMin;
-  tags = ftoutline.tags;
-  contours = ftoutline.contours;
+
+  // Invert y coordinates (SVG = neg at top, TType = neg at bottom)
+	for (FT_Vector& point : points) {
+		point.y *= -1;
+	}
 }
 
 bool glyph::operator==(const glyph& other) const {
-  if (ftoutline.n_points != other.ftoutline.n_points)
+  if (points.size() != other.points.size())
     return false;
-  if (ftoutline.n_contours != other.ftoutline.n_contours)
+  if (contours.size() != other.contours.size())
     return false;
 
-  for (int i = 0; i < ftoutline.n_points; i++) {
-    if (ftpoints[i].x != other.ftpoints[i].x || ftpoints[i].y != other.ftpoints[i].y)
+  for (size_t i = 0; i < points.size(); i++) {
+    if (points[i].x != other.points[i].x || points[i].y != other.points[i].y)
       return false;
     if (tags[i] != other.tags[i])
       return false;
   }
 
-  for (int i = 0; i < ftoutline.n_contours; i++) {
+  for (size_t i = 0; i < contours.size(); i++) {
     if (contours[i] != other.contours[i])
       return false;
   }

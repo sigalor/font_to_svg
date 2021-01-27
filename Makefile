@@ -1,3 +1,5 @@
+.SECONDARY:
+
 CC = g++
 CXXFLAGS = -g -Wall -std=c++11 -Iinclude -I/usr/include/freetype2
 LDFLAGS = -g -Wall
