@@ -1,11 +1,2 @@
-CMakeCache.txt
-CMakeFiles
-CMakeScripts
-Makefile
-cmake_install.cmake
-install_manifest.txt
-CTestTestfile.cmake
-
-example1
-example2
-example3
+font_to_svg
+/test
