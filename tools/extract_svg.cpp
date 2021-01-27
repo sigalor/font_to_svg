@@ -1,4 +1,8 @@
-#include "font_to_svg.hpp"
+#include <iostream>
+#include <string>
+
+#include <font2svg/ttf_file.hpp>
+#include <font2svg/glyph.hpp>
 
 int main(int argc, char** argv) {
 	if (argc != 4) {
@@ -6,7 +10,10 @@ int main(int argc, char** argv) {
 		exit(1);
 	}
 
-	font2svg::ttf_file file(argv[1]);
+	FT_Library library;
+	FT_Init_FreeType(&library);
+
+	font2svg::ttf_file file(library, argv[1]);
 	std::string operation = std::string(argv[2]);
 	int number_param = strtol(argv[3], NULL, 0);
 
@@ -25,9 +32,10 @@ int main(int argc, char** argv) {
 		exit(1);
 	}
 	
-	std::cout << g.svgheader() << g.svgtransform() << g.outline() << g.svgfooter();
+	std::cout << g.svg() << std::endl;
 
 	file.free();
+	FT_Done_FreeType(library);
 
   return 0;
 }
